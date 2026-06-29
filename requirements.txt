@@ -1,0 +1,11 @@
+pandas
+numpy
+matplotlib
+seaborn
+scikit-learn
+faiss-cpu
+langchain
+langchain-core
+langgraph
+pydantic
+gradio

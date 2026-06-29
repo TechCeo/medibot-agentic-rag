@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.matplotlib/
+.git/
+.pytest_cache/
+.venv/
+venv/
+*.log

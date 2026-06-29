@@ -1,0 +1,30 @@
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Environment / secrets
+.env
+.env.*
+venv/
+.venv/
+
+# MediBot datasets, analytics exports, and local databases
+Capstone/Medibot/Medibot_dataset/
+Capstone/Medibot/medibot_dataset/
+Capstone/Medibot/analytics/
+*.csv
+*.json
+
+# Local FAISS binaries / vectorizers / model weights
+Capstone/Medibot/vector_store/
+*.faiss
+*.pkl
+*.bin
+*.pt
+*.pth
+*.safetensors
+
+# Local runtime/config caches
+Capstone/Medibot/.matplotlib/
+.cache/
