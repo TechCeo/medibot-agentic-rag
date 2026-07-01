@@ -76,6 +76,7 @@ MEDICAL_KEYWORDS = {
     "emergency",
     "fever",
     "headache",
+    "head",
     "health",
     "heart",
     "hospital",
@@ -86,6 +87,8 @@ MEDICAL_KEYWORDS = {
     "pain",
     "precaution",
     "rash",
+    "pee",
+    "urine",
     "serious",
     "severity",
     "sick",
@@ -93,6 +96,8 @@ MEDICAL_KEYWORDS = {
     "treatment",
     "urgent",
     "vomiting",
+    "nauseous",
+    "hurts",
 }
 
 NON_MEDICAL_KEYWORDS = {

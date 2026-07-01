@@ -10,14 +10,17 @@ venv/
 .venv/
 
 # MediBot datasets, analytics exports, and local databases
-Capstone/Medibot/Medibot_dataset/
-Capstone/Medibot/medibot_dataset/
-Capstone/Medibot/analytics/
+Medibot_dataset/
+medibot_dataset/
+analytics/
+cache/
 *.csv
 *.json
+*.sqlite
+*.sqlite3
 
 # Local FAISS binaries / vectorizers / model weights
-Capstone/Medibot/vector_store/
+vector_store/
 *.faiss
 *.pkl
 *.bin
@@ -26,5 +29,5 @@ Capstone/Medibot/vector_store/
 *.safetensors
 
 # Local runtime/config caches
-Capstone/Medibot/.matplotlib/
+.matplotlib/
 .cache/
