@@ -1,6 +1,10 @@
 # MediBot
 
-MediBot is an AI-powered symptom checker that combines structured medical data processing, local retrieval, specialized LangChain tools, a LangGraph ReAct orchestrator, conversational memory, safety fallbacks, and a Gradio web interface.
+## Educational Use Only
+
+MediBot is an educational AI symptom-checking prototype, not a medical device and not a substitute for a licensed clinician. It provides dataset-backed decision support for learning, portfolio review, and technical demonstration. For urgent symptoms, severe pain, breathing difficulty, chest pain, fainting, neurological symptoms, uncontrolled bleeding, or rapidly worsening conditions, contact emergency services or a qualified medical professional.
+
+MediBot is an AI-powered symptom checker that combines structured medical data processing, lexical retrieval-augmented generation, specialized LangChain tools, a LangGraph ReAct orchestrator, conversational memory, safety fallbacks, and a Gradio web interface.
 
 The application is designed as educational medical decision support. It is not a replacement for a licensed clinician.
 
@@ -29,7 +33,7 @@ It also generates statistical analytics in `analytics/`, including:
 - disease overlap heatmap
 - JSON/CSV summaries for reviewer inspection
 
-### 2. FAISS Vector Store
+### 2. Lexical FAISS Vector Store
 
 `src/vector_service.py` builds retrieval documents from the processed disease profiles. Each disease contributes:
 
@@ -37,7 +41,7 @@ It also generates statistical analytics in `analytics/`, including:
 - a symptom profile document
 - individual symptom evidence records
 
-The vector layer uses a local `TfidfVectorizer` embedding backend and stores normalized vectors in a FAISS `IndexFlatIP` index. The persisted retrieval artifacts live in `vector_store/`:
+The retrieval layer uses a local `TfidfVectorizer` lexical backend and stores normalized TF-IDF vectors in a FAISS `IndexFlatIP` index. This is lexical RAG: it relies on keyword overlap, symptom aliases, and query expansion rather than dense semantic embeddings. The persisted retrieval artifacts live in `vector_store/`:
 
 - `medibot.faiss`
 - `tfidf_vectorizer.pkl`
@@ -50,7 +54,21 @@ The retrieval utility `search_medical_records(query, top_k=5)` accepts raw natur
 throbbing headache and light sensitivity
 ```
 
-and returns ranked medical records with similarity scores and metadata. Query expansion and symptom aliases improve recall for natural expressions such as `light sensitivity`, `shortness of breath`, and `sharp pain in my chest`.
+and returns ranked medical records with lexical similarity scores and metadata. Query expansion and symptom aliases improve recall for natural expressions such as `light sensitivity`, `shortness of breath`, and `sharp pain in my chest`.
+
+### Lexical Retrieval Metrics
+
+The current evaluation suite reports:
+
+| Metric | Score |
+| --- | ---: |
+| Total Test Cases | 60 |
+| Lexical Precision@k | 70.7% |
+| Lexical Recall@k | 97.67% |
+| Out-of-Scope Detection Rate | 100.0% |
+| Harmful Response Rate | 0.0% |
+
+Precision is lower than recall because many clinical conditions share symptoms such as fever, cough, headache, nausea, abdominal pain, fatigue, and chest pain. The system intentionally favors high recall so plausible candidates are surfaced for downstream triage and safety handling.
 
 ### 3. Specialized Agent Tools
 
@@ -358,6 +376,14 @@ docker run --rm -p 7860:7860 \
 
 ## Verification and Testing Guide
 
+The professional automated test path is:
+
+```bash
+python -m pytest tests/ --cov=src
+```
+
+This runs the structured pytest suite in `tests/`, including isolated agents, memory/orchestrator behavior, lexical cache checks, and evaluation metric validation.
+
 All verification scripts are in `scripts/`.
 
 ### Stage 3: Isolated Agent and Memory Tests
@@ -472,3 +498,9 @@ How do I fix a broken car engine?
 ```
 
 The UI should show normal conversation in the chat window and tool routing details in the Thought/Action Log.
+
+## Limitations & Edge Cases
+
+MediBot uses lexical TF-IDF matching, not a dense semantic model. This keeps the retrieval layer deterministic, fast, inspectable, and easy to run locally, but it also means the system depends on symptom vocabulary coverage, aliases, and keyword overlap. Phrasing that does not map to known symptoms can be rejected or under-retrieved.
+
+The disease corpus is bounded by the local CSV datasets. MediBot should not infer diseases, medications, dosage instructions, or risk factors outside the retrieved local context. Strict fallback rules are therefore critical: unsupported, non-medical, adversarial, or hallucination-prone prompts are declined before the ReAct tool loop runs.
