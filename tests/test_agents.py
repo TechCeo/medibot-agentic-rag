@@ -9,7 +9,7 @@ from src.agents import (
 )
 
 
-def test_plain_agent_functions_return_grounded_results() -> None:
+def test_plain_agent_functions_return_grounded_results(private_artifacts_required) -> None:
     diagnosis = diagnose_disease("throbbing headache and light sensitivity", top_k=3)
     assert diagnosis["probable_conditions"][0]["disease"] == "Migraine"
 

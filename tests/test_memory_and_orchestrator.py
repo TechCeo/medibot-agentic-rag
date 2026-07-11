@@ -4,7 +4,9 @@ from src.memory import memory_manager
 from src.orchestrator import CLINICAL_DISCLAIMER, NON_MEDICAL_FALLBACK
 
 
-def test_multi_turn_memory_enriches_follow_up(orchestrator, isolated_session: str) -> None:
+def test_multi_turn_memory_enriches_follow_up(
+    orchestrator, isolated_session: str, private_artifacts_required
+) -> None:
     first = orchestrator.invoke(
         "I have a throbbing headache and light sensitivity.",
         session_id=isolated_session,
@@ -21,7 +23,9 @@ def test_multi_turn_memory_enriches_follow_up(orchestrator, isolated_session: st
     assert "disease_diagnosis_agent" in [step.get("action") for step in second.trace]
 
 
-def test_red_flag_query_routes_to_diagnosis_and_severity(orchestrator, isolated_session: str) -> None:
+def test_red_flag_query_routes_to_diagnosis_and_severity(
+    orchestrator, isolated_session: str, private_artifacts_required
+) -> None:
     result = orchestrator.invoke(
         "I have a sharp pain in my chest, what should I do?",
         session_id=isolated_session,

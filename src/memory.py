@@ -9,15 +9,46 @@ from langchain_core.chat_history import InMemoryChatMessageHistory
 from src.data_pipeline import run_pipeline
 from src.vector_service import SYMPTOM_ALIASES, normalize_query
 
+CORE_SYMPTOMS = {
+    "abdominal_pain",
+    "anxiety",
+    "bladder_discomfort",
+    "breathlessness",
+    "burning_micturition",
+    "chest_pain",
+    "chills",
+    "congestion",
+    "continuous_sneezing",
+    "cough",
+    "dark_urine",
+    "dizziness",
+    "fatigue",
+    "foul_smell_ofurine",
+    "headache",
+    "high_fever",
+    "itching",
+    "joint_pain",
+    "loss_of_balance",
+    "nausea",
+    "pain_behind_the_eyes",
+    "polyuria",
+    "runny_nose",
+    "skin_rash",
+    "stomach_pain",
+    "sweating",
+    "throat_irritation",
+    "visual_disturbances",
+    "vomiting",
+    "yellowish_skin",
+}
+
 
 def _readable_symptom(symptom: str) -> str:
     return symptom.replace("_", " ").strip().lower()
 
 
-def _build_symptom_vocabulary() -> dict[str, str]:
-    pipeline_data = run_pipeline()
-    vocabulary: dict[str, str] = {}
-    for symptom in sorted(pipeline_data.severity_scores["symptom"].unique()):
+def _add_core_vocabulary(vocabulary: dict[str, str]) -> dict[str, str]:
+    for symptom in CORE_SYMPTOMS:
         vocabulary[_readable_symptom(symptom)] = symptom
         vocabulary[symptom.lower()] = symptom
     for canonical, aliases in SYMPTOM_ALIASES.items():
@@ -27,7 +58,17 @@ def _build_symptom_vocabulary() -> dict[str, str]:
     return vocabulary
 
 
-SYMPTOM_VOCABULARY = _build_symptom_vocabulary()
+def _build_symptom_vocabulary() -> dict[str, str]:
+    vocabulary: dict[str, str] = {}
+    try:
+        pipeline_data = run_pipeline()
+    except FileNotFoundError:
+        return _add_core_vocabulary(vocabulary)
+
+    for symptom in sorted(pipeline_data.severity_scores["symptom"].unique()):
+        vocabulary[_readable_symptom(symptom)] = symptom
+        vocabulary[symptom.lower()] = symptom
+    return _add_core_vocabulary(vocabulary)
 
 
 @dataclass
@@ -47,6 +88,13 @@ class MediBotMemoryManager:
 
     def __init__(self) -> None:
         self._sessions: dict[str, ConversationState] = {}
+        self._symptom_vocabulary: dict[str, str] | None = None
+
+    @property
+    def symptom_vocabulary(self) -> dict[str, str]:
+        if self._symptom_vocabulary is None:
+            self._symptom_vocabulary = _build_symptom_vocabulary()
+        return self._symptom_vocabulary
 
     def get_state(self, session_id: str = "default") -> ConversationState:
         if session_id not in self._sessions:
@@ -60,7 +108,7 @@ class MediBotMemoryManager:
         normalized = normalize_query(text)
         padded = f" {normalized} "
         found: list[str] = []
-        for phrase, canonical in SYMPTOM_VOCABULARY.items():
+        for phrase, canonical in self.symptom_vocabulary.items():
             pattern = r"(?<![a-z0-9])" + re.escape(phrase) + r"(?![a-z0-9])"
             if re.search(pattern, padded):
                 found.append(canonical)

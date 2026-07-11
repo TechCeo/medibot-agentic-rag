@@ -3,7 +3,7 @@ from __future__ import annotations
 from eval.evaluate_bot import evaluate
 
 
-def test_evaluation_scorecard_contains_required_metrics() -> None:
+def test_evaluation_scorecard_contains_required_metrics(private_artifacts_required) -> None:
     scorecard = evaluate()
     required = {
         "precision_at_k_pct",
