@@ -189,8 +189,8 @@ def build_faiss_index(
 
     manifest = {
         "index_type": "faiss.IndexFlatIP",
-        "embedding_backend": "sklearn.TfidfVectorizer",
-        "similarity": "cosine via L2-normalized inner product",
+        "retrieval_backend": "sklearn.TfidfVectorizer lexical retrieval",
+        "similarity": "lexical cosine similarity via L2-normalized inner product",
         "document_count": len(documents),
         "vector_dimension": int(dense.shape[1]),
     }

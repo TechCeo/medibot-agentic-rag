@@ -212,6 +212,9 @@ class DeterministicMedicalReActModel(BaseChatModel):
                 "urgent",
                 "emergency",
                 "what should i do",
+                "high fever",
+                "medication dosage",
+                "dosage",
                 "chest pain",
                 "shortness of breath",
                 "sharp pain",
@@ -238,9 +241,13 @@ class DeterministicMedicalReActModel(BaseChatModel):
             or _disease_from_prior_context(messages)
         )
 
+        needs_diagnosis_from_symptoms = has_symptom_language and (
+            not explicit_disease or "guarantee" in lower or "diagnose" in lower
+        )
+        needs_diagnosis_for_dependency = (needs_description or needs_precautions) and not disease_for_followup
+
         if (
-            (has_symptom_language or ((needs_description or needs_precautions) and not disease_for_followup))
-            and not explicit_disease
+            (needs_diagnosis_from_symptoms or needs_diagnosis_for_dependency)
             and "disease_diagnosis_agent" not in called_tools
         ):
             return self._tool_call(
@@ -404,6 +411,15 @@ class MediBotReActOrchestrator:
     def _should_decline(self, user_message: str, session_id: str) -> bool:
         lower = user_message.lower()
         state = memory_manager.get_state(session_id)
+        ambiguous_or_unsupported = [
+            "cannot describe symptoms",
+            "can't describe symptoms",
+            "cosmic",
+            "exact condition",
+            "rare disease",
+        ]
+        if any(phrase in lower for phrase in ambiguous_or_unsupported):
+            return True
         has_context = bool(state.symptoms or state.last_diagnosis)
         if has_context and any(
             phrase in lower
